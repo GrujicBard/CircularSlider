@@ -4,37 +4,50 @@ class Slider {
         this.container = document.querySelector(container);
         this.sliders = sliders
 
-        this.height = 200;
-        this.width = 200;
+        this.height = 500;
+        this.width = 500;
+        this.point_size = 14;
     }
 
     draw() {
         this.createLegend();
         this.createCanvas();
-
     }
-
 
     createCanvas() {
         const div = document.createElement("div");
         div.classList.add("canvas_container");
         const canvas = document.createElement("canvas");
         canvas.setAttribute("id","slider_canvas");
-        const height = canvas.width = 400;
-        const width = canvas.height = 400;
+        canvas.width = this.height;
+        canvas.height = this.width;
         div.appendChild(canvas);
         this.container.appendChild(div);
+
+        this.drawCircle(canvas);
+        this.drawPoint(canvas, 0);
+        this.drawPoint(canvas, 90);
+        this.drawPoint(canvas, 180);
+        this.drawPoint(canvas, 270);
+    }
+
+    drawCircle(canvas) {
         const ctx = canvas.getContext("2d");
         this.sliders.forEach(slider => {
             ctx.beginPath();
-            ctx.arc(height/2, width/2,slider.radius,0,2*Math.PI);
+            ctx.arc(this.height/2, this.width/2,slider.radius,0,2*Math.PI);
             ctx.stroke();
         });
     }
 
-
-    drawCircle() {
-
+    drawPoint(canvas, angle){
+        const ctx = canvas.getContext("2d");
+        var x = this.width/2 + 200 * Math.cos(-angle*Math.PI/180);
+        var y = this.height/2 + 200 * Math.sin(-angle*Math.PI/180);
+    
+        ctx.beginPath();
+        ctx.arc(x, y, this.point_size, 0, 2 * Math.PI);
+        ctx.fill();
     }
 
     createLegend() {

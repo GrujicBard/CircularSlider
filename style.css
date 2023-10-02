@@ -9,16 +9,17 @@ body {
     width: 100%;
 }
 
-#app {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
+#app{
+    position: relative;
 }
 
 /* Canvas */
+.canvas_container{
+    float: right;
+}
 
 #slider_canvas {
-    border:1px solid #d3d3d3
+    border: 1px solid #d3d3d3;
 }
 
 
@@ -27,6 +28,11 @@ body {
 .legend_container {
     float: left;
     max-height: 220px;
+    margin: 0;
+    position: relative;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
 }
 
 .table {
