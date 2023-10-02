@@ -1,19 +1,47 @@
 class Slider {
-    
+
     constructor({ container, sliders }) {
         this.container = document.querySelector(container);
         this.sliders = sliders
+
+        this.height = 200;
+        this.width = 200;
     }
 
     draw() {
         this.createLegend();
+        this.createCanvas();
+
+    }
+
+
+    createCanvas() {
+        const div = document.createElement("div");
+        div.classList.add("canvas_container");
+        const canvas = document.createElement("canvas");
+        canvas.setAttribute("id","slider_canvas");
+        const height = canvas.width = 400;
+        const width = canvas.height = 400;
+        div.appendChild(canvas);
+        this.container.appendChild(div);
+        const ctx = canvas.getContext("2d");
+        this.sliders.forEach(slider => {
+            ctx.beginPath();
+            ctx.arc(height/2, width/2,slider.radius,0,2*Math.PI);
+            ctx.stroke();
+        });
+    }
+
+
+    drawCircle() {
+
     }
 
     createLegend() {
 
         // Legend div
         const div = document.createElement("div");
-        div.classList.add("legend");
+        div.classList.add("legend_container");
         // Table
         const table = document.createElement("table");
         table.classList.add("table");
@@ -30,7 +58,7 @@ class Slider {
             const td_2 = document.createElement("td");
             const colorBox = document.createElement("span");
             colorBox.style.backgroundColor = slider.color ?? "#000000";
-            colorBox.classList.add('colorBox');
+            colorBox.classList.add('color_box');
             colorBox.innerHTML = "&nbsp";
             td_2.appendChild(colorBox);
 
