@@ -1,7 +1,7 @@
 body {
     background-color: rgb(255, 255, 255);
     font-family: 'Verdana', sans-serif;
-    min-height: 100vh;
+    height: 100vh; 
 }
 
 .container {
@@ -17,11 +17,6 @@ body {
 .svg_container{
     float: right;
 }
-
-#slider_canvas {
-    border: 1px solid #d3d3d3;
-}
-
 
 
 /* Legend */
@@ -51,6 +46,7 @@ table tr td:first-child {
     font-weight: bold;
     font-size: 25px;
     padding-right: 10px;
+    width: 70px;
 }
 
 table tr td:last-child {
