@@ -27,15 +27,25 @@ class Slider {
         svg_holder.setAttribute("height", this.svgWidth);
         svgContainer.appendChild(svg_holder);
         this.container.appendChild(svgContainer);
-        this.sliderOptions.forEach(slider => {
-            this.drawCircle(slider.radius, svg_holder);
-            this.drawPoint(slider.radius, slider.initialValue, slider.color, svg_holder);
+        this.sliderOptions.forEach((sliderOpt, index) => {
+            this.drawSlider(sliderOpt, index, svg_holder);
         });
+
+
     }
 
-    drawCircle(radius, svg) {
+    drawSlider(sliderOpt, index, svg_holder){
+        let slider = document.createElementNS(this.ns, "g");
+        slider.setAttribute("data-slider", 1);
+        svg_holder.appendChild(slider);
+        svg_holder.appendChild(slider);
+        this.drawCircle(sliderOpt.radius, index, slider);
+        this.drawPoint(sliderOpt.radius, sliderOpt.initialValue, sliderOpt.color, index, slider);
+    }
+
+    drawCircle(radius, index, svg) {
         let circle = document.createElementNS(this.ns, "circle");
-        circle.setAttribute("data-circle", 1);
+        circle.setAttribute("data-circle", index);
         circle.setAttribute("cx", this.x);
         circle.setAttribute("cy", this.y);
         circle.setAttribute("r", radius);
@@ -44,10 +54,10 @@ class Slider {
         svg.appendChild(circle);
     }
 
-    drawPoint(radius, initialValue, color, svg) {
+    drawPoint(radius, initialValue, color, index, svg) {
         let initialAngle = 360 * initialValue / (this.tempSliderOption.max - this.tempSliderOption.min);
         let point = document.createElementNS(this.ns, "circle");
-        point.setAttribute("data-point", 1);
+        point.setAttribute("data-point", index);
         let x = this.x + radius * Math.cos((initialAngle - 90) * Math.PI / 180);
         let y = this.y + radius * Math.sin((initialAngle - 90) * Math.PI / 180);
         point.setAttribute("cx", x);
