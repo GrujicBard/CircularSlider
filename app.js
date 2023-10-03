@@ -6,31 +6,34 @@ class Slider {
 
         this.svg_height = 500;
         this.svg_width = 500;
-        this.centerX = this.svg_width / 2; // Center of svg element
-        this.centerY = this.svg_height / 2;
-        this.ns = "http://www.w3.org/2000/svg";
-        this.point_size = 14;   // Size of the slider point
-        this.isMouseDown = false;
+        this.centerX = this.svg_width / 2;          // Center of svg element
+        this.centerY = this.svg_height / 2;         
+        this.ns = "http://www.w3.org/2000/svg";     
+        this.point_size = 14;                       // Size of the slider point
+        this.isMouseDown = false;                   // Is mouse clicked
     }
 
     draw() {
         this.createLegend();
 
+        // Svg container div
         let svg_container = document.createElement("div");
         svg_container.classList.add("svg_container");
         svg_container.setAttribute("data-svg-holder", true);
+        // Svg holder
         let svg_holder = document.createElementNS(this.ns, "svg");
-        //svg_holder.setAttribute("style", "border: 1px solid black")
+        svg_holder.setAttribute("style", "border: 1px solid black")
         svg_holder.setAttribute("width", this.svg_width);
         svg_holder.setAttribute("height", this.svg_width);
         svg_container.appendChild(svg_holder);
         this.container.appendChild(svg_container);
+
+        // Draw sliders
         this.slider_options.forEach((slider_opt, index) => {
             this.drawSlider(slider_opt, index, svg_holder);
         });
 
         // Event listeners
-
         svg_container.addEventListener("mousedown", e => {
             this.mouseTouchStart(e);
             console.log("mousedown");
@@ -77,6 +80,16 @@ class Slider {
         svg.appendChild(circle);
     }
 
+    /**
+     * Draws a point for a slider
+     * @param {number} radius 
+     * @param {number} min 
+     * @param {number} max 
+     * @param {number} initial_value 
+     * @param {string} color 
+     * @param {number} index 
+     * @param {SVGGElement} svg 
+     */
     drawPoint(radius, min, max, initial_value, color, index, svg) {
         let initial_angle = this.calcAngleFromValue(min, max, initial_value);
         let point = document.createElementNS(this.ns, "circle");
@@ -102,8 +115,10 @@ class Slider {
         this.updateLegend(slider_opt.min, slider_opt.max, mouse_angle, index);
     }
 
+    /**
+     * Creates a table legend with the slider data
+     */
     createLegend() {
-
         // Legend div
         let div = document.createElement("div");
         div.classList.add("legend_container");
@@ -143,7 +158,11 @@ class Slider {
     }
 
     /**
-     *  Updates the legend with the slider current value
+     * Updates the legend with the slider current value
+     * @param {number} min 
+     * @param {number} max 
+     * @param {number} angle 
+     * @param {number} index 
      */
     updateLegend(min, max, angle, index) {
         let td = document.querySelector("[data-value = '" + index + "']");
@@ -151,7 +170,10 @@ class Slider {
     }
 
     /**
-     * Calculates the new position(x, y) of Point from given radius and angle
+     * Calculates the new position(x, y) of Point from radius and angle
+     * @param {number} radius 
+     * @param {number} angle 
+     * @returns 
      */
     calcPointPos(radius, angle) {
         let x = this.centerX + radius * Math.cos(angle * Math.PI / 180);
@@ -160,14 +182,22 @@ class Slider {
     }
 
     /**
-     * Calculates the angle from given value, min value and max value
+     * Calculates the angle from value, min value and max value
+     * @param {number} min 
+     * @param {number} max 
+     * @param {number} value 
+     * @returns 
      */
     calcAngleFromValue(min, max, value) {
         return 360 * value / (max - min);
     }
 
     /**
-     * Calculates the value from given angle, min value and max value
+     * Calculates the value from angle, min value and max value
+     * @param {number} min 
+     * @param {number} max 
+     * @param {number} angle 
+     * @returns 
      */
     calcValueFromAngle(min, max, angle) {
         return Math.floor(angle * (max - min) / 360);
@@ -175,7 +205,10 @@ class Slider {
 
     /**
      * Calculates the angle of the mouse position relative to the center of the svg
-     *  */
+     * @param {number} x 
+     * @param {number} y 
+     * @returns 
+     */
     calcMousePosAngle(x, y) {
         var angle = Math.atan2(this.centerY - y, this.centerX - x) * 180 / Math.PI - 90;
 
@@ -187,7 +220,10 @@ class Slider {
 
     /**
      * Calculates the new position(x, y) of Point from given radius and angle
-     *  */
+     * @param {number} radius 
+     * @param {number} angle 
+     * @returns 
+     */
     calcPointPos(radius, angle) {
         let x = this.centerX + radius * Math.cos(angle * Math.PI / 180);
         let y = this.centerY + radius * Math.sin(angle * Math.PI / 180);
@@ -195,7 +231,7 @@ class Slider {
     }
 
     /**
-     * Get current pointer position on mouse click and hold
+     * Get current pointer position on mouse and touch events
      */
     getMousePos(e) {
         let rect = document.querySelector("[data-svg-holder]").getBoundingClientRect();
@@ -214,19 +250,23 @@ class Slider {
 
         return { x, y };
     }
-
-    mouseTouchStart(e) {
+    /**
+     * Sets isMouseDown to true on mousedown and touchstart event
+     */
+    mouseTouchStart() {
         this.isMouseDown = true;
-        let pos = this.getMousePos(e);
-        this.redrawPoint(pos);
     }
-
+    /**
+     * Redraws Point on mousemove and touchmove events
+     */
     mouseTouchMove(e) {
         if (!this.isMouseDown) { return; }
         let pos = this.getMousePos(e);
         this.redrawPoint(pos);
     }
-
+    /**
+     * Redraws Point on mouseend and touchend events and sets isMouseDown to false
+     */
     mouseTouchEnd(e) {
         if (!this.isMouseDown) { return; }
         let pos = this.getMousePos(e);
