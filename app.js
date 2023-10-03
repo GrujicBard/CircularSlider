@@ -10,8 +10,6 @@ class Slider {
         this.y = this.svgWidth / 2;
         this.ns = "http://www.w3.org/2000/svg";
         this.point_size = 14;   // Size of the slider point
-        this.path_width = 15;   // Width of the slider path
-        this.tau = 2 * Math.PI; // Tau constant
 
         this.tempSliderOption = this.sliderOptions[0];
     }
@@ -36,7 +34,7 @@ class Slider {
 
     drawSlider(sliderOpt, index, svg_holder){
         let slider = document.createElementNS(this.ns, "g");
-        slider.setAttribute("data-slider", 1);
+        slider.setAttribute("data-slider", index);
         svg_holder.appendChild(slider);
         svg_holder.appendChild(slider);
         this.drawCircle(sliderOpt.radius, index, slider);
@@ -81,20 +79,21 @@ class Slider {
             let tr = document.createElement("tr");
             // Value
             let td_1 = document.createElement("td");
-            td_1.setAttribute("value", index);
+            td_1.setAttribute("data-value", index);
             td_1.innerText = slider.initialValue ?? 0;
 
             // Color
             let td_2 = document.createElement("td");
-            let colorBox = document.createElement("span");
-            colorBox.style.backgroundColor = slider.color ?? "#000000";
-            colorBox.classList.add('color_box');
-            colorBox.innerHTML = "&nbsp";
-            td_2.appendChild(colorBox);
+            let color_box = document.createElement("span");
+            color_box.setAttribute("data-color", index);
+            color_box.style.backgroundColor = slider.color ?? "#000000";
+            color_box.classList.add('color_box');
+            color_box.innerHTML = "&nbsp";
+            td_2.appendChild(color_box);
 
             // Name
             let td_3 = document.createElement("td");
-            td_3.setAttribute("name", index);
+            td_3.setAttribute("data-name", index);
             td_3.innerText = slider.name ?? "No name";
 
             tr.appendChild(td_1);
