@@ -6,12 +6,10 @@ class Slider {
 
         this.svg_height = 500;
         this.svg_width = 500;
-        this.x = this.svg_height / 2;
-        this.y = this.svg_width / 2;
+        this.centerX = this.svg_height / 2; // Center of svg element
+        this.centerY = this.svg_width / 2;
         this.ns = "http://www.w3.org/2000/svg";
         this.point_size = 14;   // Size of the slider point
-
-        this.tempSliderOption = this.slider_options[0];
     }
 
     draw() {
@@ -28,9 +26,10 @@ class Slider {
         this.slider_options.forEach((slider_opt, index) => {
             this.drawSlider(slider_opt, index, svg_holder);
         });
+        svg_container.addEventListener("click", this.getMousePos.bind(this), false);
     }
 
-    drawSlider(slider_opt, index, svg_holder){
+    drawSlider(slider_opt, index, svg_holder) {
         let slider = document.createElementNS(this.ns, "g");
         slider.setAttribute("data-slider", index);
         svg_holder.appendChild(slider);
@@ -42,8 +41,8 @@ class Slider {
     drawCircle(radius, index, svg) {
         let circle = document.createElementNS(this.ns, "circle");
         circle.setAttribute("data-circle", index);
-        circle.setAttribute("cx", this.x);
-        circle.setAttribute("cy", this.y);
+        circle.setAttribute("cx", this.centerX);
+        circle.setAttribute("cy", this.centerY);
         circle.setAttribute("r", radius);
         circle.setAttribute("stroke", "black");
         circle.setAttribute("fill", "none");
@@ -54,8 +53,8 @@ class Slider {
         let initial_angle = 360 * initial_value / (max - min);
         let point = document.createElementNS(this.ns, "circle");
         point.setAttribute("data-point", index);
-        let x = this.x + radius * Math.cos((initial_angle - 90) * Math.PI / 180);
-        let y = this.y + radius * Math.sin((initial_angle - 90) * Math.PI / 180);
+        let x = this.centerX + radius * Math.cos((initial_angle - 90) * Math.PI / 180);
+        let y = this.centerY + radius * Math.sin((initial_angle - 90) * Math.PI / 180);
         point.setAttribute("cx", x);
         point.setAttribute("cy", y);
         point.setAttribute("r", this.point_size);
@@ -78,7 +77,7 @@ class Slider {
             // Value
             let td_1 = document.createElement("td");
             td_1.setAttribute("data-value", index);
-            td_1.innerText = slider.initialValue ?? 0;
+            td_1.innerText = slider.initial_value ?? 0;
 
             // Color
             let td_2 = document.createElement("td");
@@ -102,5 +101,57 @@ class Slider {
         div.appendChild(table);
         this.container.appendChild(div);
     }
+
+    redrawPoint(x, y){
+        let point = document.querySelector("[data-point = '0']");
+        let mouse_angle = this.getMousePosAngle(x, y); 
+        let handleCenter = this.calculatePointPos(200, mouse_angle);
+        
+        point.setAttribute("cx", handleCenter.x);
+        point.setAttribute("cy", handleCenter.y);
+    }
+
+    /**
+     * Calculates the angle of the mouse position relative to the center of the svg
+     *  */
+    getMousePosAngle(x, y){
+        return Math.atan2(this.centerY - y, this.centerX - x) * 180 / Math.PI;
+    }
+
+    /**
+     * Calculates the new position(x, y) of Point from given radius and angle
+     *  */
+    calculatePointPos (radius, angle) {
+        let x = this.centerX + radius * Math.cos((angle-180) * Math.PI / 180);
+        let y = this.centerY + radius * Math.sin((angle-180) * Math.PI / 180);
+        return { x, y };
+    }
+
+    // Event handlers
+
+    /**
+     * Get current mouse position on mouse click and hold
+     */ 
+    getMousePos(e) {
+        let rect = document.querySelector("[data-svg-holder]").getBoundingClientRect();
+        var client_x = e.clientX;
+        var client_y = e.clientY;
+        
+        // Touch Event triggered
+        if (window.TouchEvent && e instanceof TouchEvent) 
+        {
+            client_x = e.touches[0].pageX;
+            client_y = e.touches[0].pageY;
+        }
+        var x = client_x - rect.left;
+        var y = client_y - rect.top;
+
+        console.log("X: " + x + " - Y: " + y);
+        this.redrawPoint(x, y);
+    }
+
+
+
+
 
 }
