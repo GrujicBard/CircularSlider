@@ -1,52 +1,60 @@
 class Slider {
 
-    constructor({ container, sliders }) {
+    constructor({ container, sliderOptions }) {
         this.container = document.querySelector(container);
-        this.sliders = sliders
+        this.sliderOptions = sliderOptions
 
-        this.height = 500;
-        this.width = 500;
-        this.point_size = 14;
+        this.svgHeight = 500;
+        this.svgWidth = 500;
+        this.x = this.svgHeight / 2;
+        this.y = this.svgWidth / 2;
+        this.ns = "http://www.w3.org/2000/svg";
+        this.point_size = 14;   // Size of the slider point
+        this.path_width = 15;   // Width of the slider path
+        this.tau = 2 * Math.PI; // Tau constant
+
+        this.tempSliderOption = this.sliderOptions[0];
     }
 
     draw() {
         this.createLegend();
-        this.createCanvas();
-        this.sliders.forEach(slider => {
-            this.drawCircle(slider.radius);
-            this.drawPoint(slider.radius, 0);
+
+        let svgContainer = document.createElement("div");
+        svgContainer.classList.add("svg_container");
+        svgContainer.setAttribute("data-svg-holder", true);
+        let svg_holder = document.createElementNS(this.ns, "svg");
+        svg_holder.setAttribute("width", this.svgWidth);
+        svg_holder.setAttribute("height", this.svgWidth);
+        svgContainer.appendChild(svg_holder);
+        this.container.appendChild(svgContainer);
+        this.sliderOptions.forEach(slider => {
+            this.drawCircle(slider.radius, svg_holder);
+            this.drawPoint(slider.radius, slider.initialValue, slider.color, svg_holder);
         });
-
     }
 
-    createCanvas() {
-        let div = document.createElement("div");
-        div.classList.add("canvas_container");
-        let canvas = document.createElement("canvas");
-        canvas.setAttribute("id", "slider_canvas");
-        canvas.width = this.height;
-        canvas.height = this.width;
-        div.appendChild(canvas);
-        this.container.appendChild(div);
+    drawCircle(radius, svg) {
+        let circle = document.createElementNS(this.ns, "circle");
+        circle.setAttribute("data-circle", 1);
+        circle.setAttribute("cx", this.x);
+        circle.setAttribute("cy", this.y);
+        circle.setAttribute("r", radius);
+        circle.setAttribute("stroke", "black");
+        circle.setAttribute("fill", "none");
+        svg.appendChild(circle);
     }
 
-    drawCircle(radius) {
-        let canvas = document.getElementById("slider_canvas");
-        let ctx = canvas.getContext("2d");
-        ctx.beginPath();
-        ctx.arc(this.height / 2, this.width / 2, radius, 0, 2 * Math.PI);
-        ctx.stroke();
-    }
-
-    drawPoint(radius, angle) {
-        let canvas = document.getElementById("slider_canvas");
-        let ctx = canvas.getContext("2d");
-        let x = this.width / 2 + radius * Math.cos(-angle * Math.PI / 180);
-        let y = this.height / 2 + radius * Math.sin(-angle * Math.PI / 180);
-
-        ctx.beginPath();
-        ctx.arc(x, y, this.point_size, 0, 2 * Math.PI);
-        ctx.fill();
+    drawPoint(radius, initialValue, color, svg) {
+        let initialAngle = 360 * initialValue / (this.tempSliderOption.max - this.tempSliderOption.min);
+        let point = document.createElementNS(this.ns, "circle");
+        point.setAttribute("data-point", 1);
+        let x = this.x + radius * Math.cos((initialAngle - 90) * Math.PI / 180);
+        let y = this.y + radius * Math.sin((initialAngle - 90) * Math.PI / 180);
+        point.setAttribute("cx", x);
+        point.setAttribute("cy", y);
+        point.setAttribute("r", this.point_size);
+        point.setAttribute("fill", color);
+        svg.appendChild(point);
     }
 
     createLegend() {
@@ -58,7 +66,7 @@ class Slider {
         let table = document.createElement("table");
         table.classList.add("table");
         // Data for each slider
-        this.sliders.forEach((slider, index) => {
+        this.sliderOptions.forEach((slider, index) => {
 
             let tr = document.createElement("tr");
             // Value
@@ -87,6 +95,5 @@ class Slider {
         div.appendChild(table);
         this.container.appendChild(div);
     }
-
 
 }

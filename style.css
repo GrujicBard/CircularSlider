@@ -13,8 +13,8 @@ body {
     position: relative;
 }
 
-/* Canvas */
-.canvas_container{
+/* Slider */
+.svg_container{
     float: right;
 }
 
