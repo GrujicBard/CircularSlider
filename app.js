@@ -9,7 +9,7 @@ class Slider {
         this.centerX = this.svg_width / 2;          // Center of svg element
         this.centerY = this.svg_height / 2;         
         this.ns = "http://www.w3.org/2000/svg";     
-        this.point_size = 14;                       // Size of the slider point
+        this.handle_size = 14;                       // Size of the slider handle
         this.isMouseDown = false;                   // Is mouse clicked
     }
 
@@ -22,7 +22,7 @@ class Slider {
         svg_container.setAttribute("data-svg-holder", true);
         // Svg holder
         let svg_holder = document.createElementNS(this.ns, "svg");
-        svg_holder.setAttribute("style", "border: 1px solid black")
+        svg_holder.setAttribute("style", "border: 1px solid #cfcfcf")
         svg_holder.setAttribute("width", this.svg_width);
         svg_holder.setAttribute("height", this.svg_width);
         svg_container.appendChild(svg_holder);
@@ -61,12 +61,13 @@ class Slider {
     }
 
     drawSlider(slider_opt, index, svg_holder) {
+        // Group of slider elements
         let slider = document.createElementNS(this.ns, "g");
         slider.setAttribute("data-slider", index);
         slider.setAttribute('transform', 'rotate(-90,' + this.centerX + ',' + this.centerY + ')');
         svg_holder.appendChild(slider);
         this.drawCircle(slider_opt.radius, index, slider);
-        this.drawPoint(slider_opt.radius, slider_opt.min, slider_opt.max, slider_opt.initial_value, slider_opt.color, index, slider);
+        this.drawHandle(slider_opt.radius, slider_opt.min, slider_opt.max, slider_opt.initial_value, slider_opt.color, index, slider);
     }
 
     drawCircle(radius, index, svg) {
@@ -75,13 +76,13 @@ class Slider {
         circle.setAttribute("cx", this.centerX);
         circle.setAttribute("cy", this.centerY);
         circle.setAttribute("r", radius);
-        circle.setAttribute("stroke", "black");
+        circle.setAttribute("stroke", "#cfcfcf");
         circle.setAttribute("fill", "none");
         svg.appendChild(circle);
     }
 
     /**
-     * Draws a point for a slider
+     * Draws a handle for a slider
      * @param {number} radius 
      * @param {number} min 
      * @param {number} max 
@@ -90,31 +91,35 @@ class Slider {
      * @param {number} index 
      * @param {SVGGElement} svg 
      */
-    drawPoint(radius, min, max, initial_value, color, index, svg) {
+    drawHandle(radius, min, max, initial_value, color, index, svg) {
         let initial_angle = this.calcAngleFromValue(min, max, initial_value);
-        let point = document.createElementNS(this.ns, "circle");
-        point.setAttribute("data-point", index);
-        let pointPosition = this.calcPointPos(radius, initial_angle);
-        point.setAttribute("cx", pointPosition.x);
-        point.setAttribute("cy", pointPosition.y);
-        point.setAttribute("r", this.point_size);
-        point.setAttribute("fill", color);
-        svg.appendChild(point);
+        let handle = document.createElementNS(this.ns, "circle");
+        handle.setAttribute("data-handle", index);
+        let handlePosition = this.calcHandlePos(radius, initial_angle);
+        handle.setAttribute("cx", handlePosition.x);
+        handle.setAttribute("cy", handlePosition.y);
+        handle.setAttribute("r", this.handle_size);
+        handle.setAttribute("fill", color);
+        svg.appendChild(handle);
     }
 
-    redrawPoint({ x, y }) {
+    redrawHandle({ x, y }) {
         var index = 0; // This is static for now!!!
-        let point = document.querySelector("[data-point = '" + index + "']");
+        let handle = document.querySelector("[data-handle = '" + index + "']");
         let slider_opt = this.slider_options[index];
         let mouse_angle = this.calcMousePosAngle(x, y);
-        let pointPosition = this.calcPointPos(slider_opt.radius, mouse_angle);
+        let handlePosition = this.calcHandlePos(slider_opt.radius, mouse_angle);
 
-        point.setAttribute("cx", pointPosition.x);
-        point.setAttribute("cy", pointPosition.y);
+        handle.setAttribute("cx", handlePosition.x);
+        handle.setAttribute("cy", handlePosition.y);
 
         this.updateLegend(slider_opt.min, slider_opt.max, mouse_angle, index);
     }
 
+    findNearestSlider(){
+        /* THIS IS WHERE I LEFT OFF */
+    }
+    
     /**
      * Creates a table legend with the slider data
      */
@@ -170,12 +175,12 @@ class Slider {
     }
 
     /**
-     * Calculates the new position(x, y) of Point from radius and angle
+     * Calculates the new position(x, y) of a handle
      * @param {number} radius 
      * @param {number} angle 
      * @returns 
      */
-    calcPointPos(radius, angle) {
+    calcHandlePos(radius, angle) {
         let x = this.centerX + radius * Math.cos(angle * Math.PI / 180);
         let y = this.centerY + radius * Math.sin(angle * Math.PI / 180);
         return { x, y };
@@ -219,21 +224,9 @@ class Slider {
     }
 
     /**
-     * Calculates the new position(x, y) of Point from given radius and angle
-     * @param {number} radius 
-     * @param {number} angle 
-     * @returns 
-     */
-    calcPointPos(radius, angle) {
-        let x = this.centerX + radius * Math.cos(angle * Math.PI / 180);
-        let y = this.centerY + radius * Math.sin(angle * Math.PI / 180);
-        return { x, y };
-    }
-
-    /**
      * Get current pointer position on mouse and touch events
      */
-    getMousePos(e) {
+    getPointerPos(e) {
         let rect = document.querySelector("[data-svg-holder]").getBoundingClientRect();
         var x, y;
         if(e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel'){
@@ -257,21 +250,21 @@ class Slider {
         this.isMouseDown = true;
     }
     /**
-     * Redraws Point on mousemove and touchmove events
+     * Redraws slider on mousemove and touchmove events
      */
     mouseTouchMove(e) {
         if (!this.isMouseDown) { return; }
-        let pos = this.getMousePos(e);
-        this.redrawPoint(pos);
+        let pos = this.getPointerPos(e);
+        this.redrawHandle(pos);
     }
     /**
-     * Redraws Point on mouseend and touchend events and sets isMouseDown to false
+     * Redraws slider on mouseend and touchend events and sets isMouseDown to false
      */
     mouseTouchEnd(e) {
         if (!this.isMouseDown) { return; }
-        let pos = this.getMousePos(e);
+        let pos = this.getPointerPos(e);
         this.isMouseDown = false;
-        this.redrawPoint(pos);
+        this.redrawHandle(pos);
     }
 }
 
