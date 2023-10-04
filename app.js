@@ -101,18 +101,24 @@ class Slider {
 
     redrawHandle({ x, y }) {
         let activeSlider = document.querySelector("[data-slider][data-active='true'");
-        let index = (activeSlider.getAttribute("data-slider"));
-        let handle = document.querySelector("[data-handle = '" + index + "']");
-        let slider_opt = this.slider_options[index];
-        let mouse_angle = this.calcPointerPosAngle(x, y);
-        let handlePosition = this.calcHandlePos(slider_opt.radius, mouse_angle);
-
-        handle.setAttribute("cx", handlePosition.x);
-        handle.setAttribute("cy", handlePosition.y);
-
-        this.updateLegend(slider_opt.min, slider_opt.max, mouse_angle, index);
+        // Check if active slider exsists
+        if(activeSlider != null){
+            let index = (activeSlider.getAttribute("data-slider"));
+            let handle = document.querySelector("[data-handle = '" + index + "']");
+            let slider_opt = this.slider_options[index];
+            let mouse_angle = this.calcPointerPosAngle(x, y);
+            let handlePosition = this.calcHandlePos(slider_opt.radius, mouse_angle);
+    
+            handle.setAttribute("cx", handlePosition.x);
+            handle.setAttribute("cy", handlePosition.y);
+    
+            this.updateLegend(slider_opt.min, slider_opt.max, mouse_angle, index);
+        }
     }
 
+    /**
+     * Finds nearest slider according to mouse distance and sets it to active
+     */
     findNearestSlider(pointerPos) {
         // Pointer distance from center
         let pointerDistance = this.calcDistanceFromCenter(pointerPos.x, pointerPos.y);
@@ -121,25 +127,24 @@ class Slider {
 
         // Subtract pointer distance to slider radiuses
         let distanceArr = [];
-        sliders.forEach(slider => {            
+        sliders.forEach(slider => {
             var distance = Math.abs(slider.getAttribute("data-radius") - pointerDistance);
             distanceArr = [...distanceArr, distance];
         });
 
         // Index of smallest distance from array of distances
-        let index = distanceArr.indexOf(Math.min(...distanceArr));
-
+        let min_distance = Math.min(...distanceArr)
+        let index = distanceArr.indexOf(min_distance);
         // Slider with smallest distance is set to active, others are set to false
-        for(let i = 0; i<sliders.length; i++){
-            if(i == index){
+        for (let i = 0; i < sliders.length; i++) {
+            // Only set slider to active if distance is equal or less than 20
+            if (i == index && min_distance <= 20) {
                 sliders[i].setAttribute("data-active", true);
             }
-            else{
+            else {
                 sliders[i].setAttribute("data-active", false);
             }
         };
-        
-        // TO DO: limit min distance
     }
 
     /**
