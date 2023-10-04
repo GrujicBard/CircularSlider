@@ -6,16 +6,16 @@ class Slider {
 
         this.svg_height = 500;
         this.svg_width = 500;
-        this.center_x = this.svg_width / 2;          // Center of svg element
+        this.center_x = this.svg_width / 2;         // Center of svg element
         this.center_y = this.svg_height / 2;
         this.ns = "http://www.w3.org/2000/svg";
-        this.handle_size = 14;                       // Size of the slider handle
+        this.handle_size = 14;                      // Size of the slider handle
+        this.path_width = this.handle_size *2;      // Width of the path
         this.isMouseDown = false;                   // Is mouse clicked
     }
 
     draw() {
         this.createLegend();
-
         // Svg container div
         let svg_container = document.createElement("div");
         svg_container.classList.add("svg_container");
@@ -60,10 +60,12 @@ class Slider {
         slider.setAttribute("data-slider", index);
         slider.setAttribute("data-active", false);
         slider.setAttribute("data-radius", slider_opt.radius);
-        slider.setAttribute('transform', 'rotate(-90,' + this.center_x + ',' + this.center_y + ')');
+        slider.setAttribute("transform", `rotate(-90, ${this.center_x},${this.center_y})`);
         svg_holder.appendChild(slider);
         this.drawCircle(slider_opt.radius, index, slider);
-        this.drawHandle(slider_opt.radius, slider_opt.min, slider_opt.max, slider_opt.initial_value, slider_opt.color, index, slider);
+        let initial_angle = this.calcAngleFromValue(slider_opt.min, slider_opt.max, slider_opt.initial_value);
+        this.drawPath(slider_opt.radius, initial_angle, slider_opt.color, index, slider)
+        this.drawHandle(slider_opt.radius, initial_angle, index, slider);
     }
 
     drawCircle(radius, index, svg) {
@@ -72,9 +74,33 @@ class Slider {
         circle.setAttribute("cx", this.center_x);
         circle.setAttribute("cy", this.center_y);
         circle.setAttribute("r", radius);
-        circle.setAttribute("stroke", "#cfcfcf");
         circle.setAttribute("fill", "none");
+        circle.style.strokeWidth = 1;
+        circle.style.stroke = "#cfcfcf";
         svg.appendChild(circle);
+    }
+
+    drawPath(radius, initial_angle, color, index, svg ){
+        let path = document.createElementNS(this.ns, "path");
+        path.setAttribute('d', this.definePath(radius, 0, initial_angle));
+        path.setAttribute("data-path", index);
+        path.setAttribute("fill", "none");
+        path.style.stroke = color;
+        path.style.strokeWidth = this.path_width;
+        svg.appendChild(path);
+    }
+
+    definePath (radius, angle_start, angle_end) {
+        let startPos = this.calcPosFromAngle(radius, angle_start);
+        let endPos = this.calcPosFromAngle(radius, angle_end);
+        let sweep = 1;
+
+        // Determines if arc should be large or small
+        if(angle_end <= 180){
+            sweep = 0;
+        }
+        
+        return `M ${startPos.x} ${startPos.y} A ${radius} ${radius} 1 ${sweep} 1 ${endPos.x} ${endPos.y}`;
     }
 
     /**
@@ -87,31 +113,41 @@ class Slider {
      * @param {number} index 
      * @param {SVGGElement} svg 
      */
-    drawHandle(radius, min, max, initial_value, color, index, svg) {
-        let initial_angle = this.calcAngleFromValue(min, max, initial_value);
+    drawHandle(radius, initial_angle, index, svg) {
+   
         let handle = document.createElementNS(this.ns, "circle");
         handle.setAttribute("data-handle", index);
-        let handlePosition = this.calcHandlePos(radius, initial_angle);
+        let handlePosition = this.calcPosFromAngle(radius, initial_angle);
         handle.setAttribute("cx", handlePosition.x);
         handle.setAttribute("cy", handlePosition.y);
         handle.setAttribute("r", this.handle_size);
-        handle.setAttribute("fill", color);
+        handle.setAttribute("fill", "#f6f7f7");
+        handle.style.stroke = "#cfcfcf"
+        handle.style.strokeWidth = 1;
         svg.appendChild(handle);
     }
 
-    redrawHandle({ x, y }) {
+    redrawSlider({ x, y }) {
         let activeSlider = document.querySelector("[data-slider][data-active='true'");
         // Check if active slider exsists
-        if(activeSlider != null){
+        if (activeSlider != null) {
             let index = (activeSlider.getAttribute("data-slider"));
-            let handle = document.querySelector("[data-handle = '" + index + "']");
+            let handle = document.querySelector(`[data-handle = "${index}"]`);
+            let path = document.querySelector(`[data-path = "${index}"]`);
             let slider_opt = this.slider_options[index];
+
+            // Get new angle
             let mouse_angle = this.calcPointerPosAngle(x, y);
-            let handlePosition = this.calcHandlePos(slider_opt.radius, mouse_angle);
-    
-            handle.setAttribute("cx", handlePosition.x);
-            handle.setAttribute("cy", handlePosition.y);
-    
+
+            // Redraw Path
+            path.setAttribute('d', this.definePath(slider_opt.radius, 0, mouse_angle));
+
+            // Redraw Handle
+            let newPos = this.calcPosFromAngle(slider_opt.radius, mouse_angle);
+            handle.setAttribute("cx", newPos.x);
+            handle.setAttribute("cy", newPos.y);
+          
+            // Updates legend data
             this.updateLegend(slider_opt.min, slider_opt.max, mouse_angle, index);
         }
     }
@@ -197,17 +233,17 @@ class Slider {
      * @param {number} index 
      */
     updateLegend(min, max, angle, index) {
-        let td = document.querySelector("[data-value = '" + index + "']");
+        let td = document.querySelector(`[data-value = "${index}"]`);
         td.innerHTML = this.calcValueFromAngle(min, max, angle);
     }
 
     /**
-     * Calculates the new position(x, y) of a handle
+     * Calculates the new position(x, y) from radius and angle
      * @param {number} radius 
      * @param {number} angle 
      * @returns 
      */
-    calcHandlePos(radius, angle) {
+    calcPosFromAngle(radius, angle) {
         let x = this.center_x + radius * Math.cos(angle * Math.PI / 180);
         let y = this.center_y + radius * Math.sin(angle * Math.PI / 180);
         return { x, y };
@@ -232,7 +268,7 @@ class Slider {
      * @returns 
      */
     calcValueFromAngle(min, max, angle) {
-        return Math.floor(angle * (max - min) / 360);
+        return Math.floor((angle * (max - min) / 360) + min);
     }
 
     /**
@@ -277,7 +313,6 @@ class Slider {
         }
         var x = x - rect.left;
         var y = y - rect.top;
-
         return { x, y };
     }
     /**
@@ -294,7 +329,7 @@ class Slider {
     mouseTouchMove(e) {
         if (!this.isMouseDown) { return; }
         let pos = this.getPointerPos(e);
-        this.redrawHandle(pos);
+        this.redrawSlider(pos);
     }
     /**
      * Redraws slider on mouseend and touchend events and sets isMouseDown to false
@@ -303,7 +338,7 @@ class Slider {
         if (!this.isMouseDown) { return; }
         let pos = this.getPointerPos(e);
         this.isMouseDown = false;
-        this.redrawHandle(pos);
+        this.redrawSlider(pos);
     }
 }
 
