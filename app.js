@@ -148,7 +148,7 @@ class Slider {
             handle.setAttribute("cy", newPos.y);
           
             // Updates legend data
-            this.updateLegend(slider_opt.min, slider_opt.max, mouse_angle, index);
+            this.updateLegend(slider_opt.min, slider_opt.max, slider_opt.step, mouse_angle, index);
         }
     }
 
@@ -232,9 +232,11 @@ class Slider {
      * @param {number} angle 
      * @param {number} index 
      */
-    updateLegend(min, max, angle, index) {
+    updateLegend(min, max, step, angle, index) {
         let td = document.querySelector(`[data-value = "${index}"]`);
-        td.innerHTML = this.calcValueFromAngle(min, max, angle);
+        let value = this.calcValueFromAngle(min, max, angle);
+        value = Math.round(value/step)* step;
+        td.innerHTML = value;
     }
 
     /**
