@@ -6,9 +6,9 @@ class Slider {
 
         this.svg_height = 500;
         this.svg_width = 500;
-        this.centerX = this.svg_width / 2;          // Center of svg element
-        this.centerY = this.svg_height / 2;         
-        this.ns = "http://www.w3.org/2000/svg";     
+        this.center_x = this.svg_width / 2;          // Center of svg element
+        this.center_y = this.svg_height / 2;
+        this.ns = "http://www.w3.org/2000/svg";
         this.handle_size = 14;                       // Size of the slider handle
         this.isMouseDown = false;                   // Is mouse clicked
     }
@@ -36,27 +36,21 @@ class Slider {
         // Event listeners
         svg_container.addEventListener("mousedown", e => {
             this.mouseTouchStart(e);
-            console.log("mousedown");
         });
         svg_container.addEventListener("mousemove", e => {
             this.mouseTouchMove(e);
-            console.log("mousemove");
         });
         svg_container.addEventListener("mouseup", e => {
             this.mouseTouchEnd(e);
-            console.log("mouseup");
         });
         svg_container.addEventListener("touchstart", e => {
             this.mouseTouchStart(e);
-            console.log("touchstart");
         });
         svg_container.addEventListener("touchmove", e => {
             this.mouseTouchMove(e);
-            console.log("touchmove");
         });
         svg_container.addEventListener("touchend", e => {
             this.mouseTouchEnd(e);
-            console.log("touchend");
         });
     }
 
@@ -64,7 +58,9 @@ class Slider {
         // Group of slider elements
         let slider = document.createElementNS(this.ns, "g");
         slider.setAttribute("data-slider", index);
-        slider.setAttribute('transform', 'rotate(-90,' + this.centerX + ',' + this.centerY + ')');
+        slider.setAttribute("data-active", false);
+        slider.setAttribute("data-radius", slider_opt.radius);
+        slider.setAttribute('transform', 'rotate(-90,' + this.center_x + ',' + this.center_y + ')');
         svg_holder.appendChild(slider);
         this.drawCircle(slider_opt.radius, index, slider);
         this.drawHandle(slider_opt.radius, slider_opt.min, slider_opt.max, slider_opt.initial_value, slider_opt.color, index, slider);
@@ -73,8 +69,8 @@ class Slider {
     drawCircle(radius, index, svg) {
         let circle = document.createElementNS(this.ns, "circle");
         circle.setAttribute("data-circle", index);
-        circle.setAttribute("cx", this.centerX);
-        circle.setAttribute("cy", this.centerY);
+        circle.setAttribute("cx", this.center_x);
+        circle.setAttribute("cy", this.center_y);
         circle.setAttribute("r", radius);
         circle.setAttribute("stroke", "#cfcfcf");
         circle.setAttribute("fill", "none");
@@ -104,10 +100,11 @@ class Slider {
     }
 
     redrawHandle({ x, y }) {
-        var index = 0; // This is static for now!!!
+        let activeSlider = document.querySelector("[data-slider][data-active='true'");
+        let index = (activeSlider.getAttribute("data-slider"));
         let handle = document.querySelector("[data-handle = '" + index + "']");
         let slider_opt = this.slider_options[index];
-        let mouse_angle = this.calcMousePosAngle(x, y);
+        let mouse_angle = this.calcPointerPosAngle(x, y);
         let handlePosition = this.calcHandlePos(slider_opt.radius, mouse_angle);
 
         handle.setAttribute("cx", handlePosition.x);
@@ -116,10 +113,35 @@ class Slider {
         this.updateLegend(slider_opt.min, slider_opt.max, mouse_angle, index);
     }
 
-    findNearestSlider(){
-        /* THIS IS WHERE I LEFT OFF */
+    findNearestSlider(pointerPos) {
+        // Pointer distance from center
+        let pointerDistance = this.calcDistanceFromCenter(pointerPos.x, pointerPos.y);
+        // Get all sliders
+        let sliders = document.querySelectorAll("[data-slider]");
+
+        // Subtract pointer distance to slider radiuses
+        let distanceArr = [];
+        sliders.forEach(slider => {            
+            var distance = Math.abs(slider.getAttribute("data-radius") - pointerDistance);
+            distanceArr = [...distanceArr, distance];
+        });
+
+        // Index of smallest distance from array of distances
+        let index = distanceArr.indexOf(Math.min(...distanceArr));
+
+        // Slider with smallest distance is set to active, others are set to false
+        for(let i = 0; i<sliders.length; i++){
+            if(i == index){
+                sliders[i].setAttribute("data-active", true);
+            }
+            else{
+                sliders[i].setAttribute("data-active", false);
+            }
+        };
+        
+        // TO DO: limit min distance
     }
-    
+
     /**
      * Creates a table legend with the slider data
      */
@@ -181,8 +203,8 @@ class Slider {
      * @returns 
      */
     calcHandlePos(radius, angle) {
-        let x = this.centerX + radius * Math.cos(angle * Math.PI / 180);
-        let y = this.centerY + radius * Math.sin(angle * Math.PI / 180);
+        let x = this.center_x + radius * Math.cos(angle * Math.PI / 180);
+        let y = this.center_y + radius * Math.sin(angle * Math.PI / 180);
         return { x, y };
     }
 
@@ -209,13 +231,13 @@ class Slider {
     }
 
     /**
-     * Calculates the angle of the mouse position relative to the center of the svg
+     * Calculates the angle of the pointer position relative to the center of the svg
      * @param {number} x 
      * @param {number} y 
      * @returns 
      */
-    calcMousePosAngle(x, y) {
-        var angle = Math.atan2(this.centerY - y, this.centerX - x) * 180 / Math.PI - 90;
+    calcPointerPosAngle(x, y) {
+        var angle = Math.atan2(this.center_y - y, this.center_x - x) * 180 / Math.PI - 90;
 
         if (angle < 0) {
             angle = angle + 360;
@@ -224,17 +246,27 @@ class Slider {
     }
 
     /**
+     * Calculates the distance from the point(x, y) to the center of the svg
+     * @param {number} x 
+     * @param {number} y 
+     * @returns 
+     */
+    calcDistanceFromCenter(x, y) {
+        return Math.sqrt(Math.pow(x - this.center_x, 2) + Math.pow(y - this.center_y, 2));
+    }
+
+    /**
      * Get current pointer position on mouse and touch events
      */
     getPointerPos(e) {
         let rect = document.querySelector("[data-svg-holder]").getBoundingClientRect();
         var x, y;
-        if(e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel'){
+        if (e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel') {
             var evt = (typeof e.originalEvent === 'undefined') ? e : e.originalEvent;
             var touch = evt.touches[0] || evt.changedTouches[0];
             x = touch.pageX;
             y = touch.pageY;
-        } else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover'|| e.type=='mouseout' || e.type=='mouseenter' || e.type=='mouseleave') {
+        } else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover' || e.type == 'mouseout' || e.type == 'mouseenter' || e.type == 'mouseleave') {
             x = e.clientX;
             y = e.clientY;
         }
@@ -246,8 +278,10 @@ class Slider {
     /**
      * Sets isMouseDown to true on mousedown and touchstart event
      */
-    mouseTouchStart() {
+    mouseTouchStart(e) {
         this.isMouseDown = true;
+        let pos = this.getPointerPos(e);
+        this.findNearestSlider(pos);
     }
     /**
      * Redraws slider on mousemove and touchmove events
