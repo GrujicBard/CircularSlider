@@ -4,26 +4,32 @@ class Slider {
         this.container = document.querySelector(container);
         this.slider_options = slider_options
 
-        this.svg_height = 500;
-        this.svg_width = 500;
+        this.svg_height = 500;                      // Height of the svg element
+        this.svg_width = 500;                       // Width of the svg element
         this.center_x = this.svg_width / 2;         // Center of svg element
         this.center_y = this.svg_height / 2;
         this.ns = "http://www.w3.org/2000/svg";
         this.handle_size = 16;                      // Size of the slider handle
-        this.path_width = 28;                       // Width of the path
+        this.path_width = 28;                       // Width of the slider path
         this.path_dash_size = 10;                   // Size of the dashes of the background path
         this.path_dash_gap = 2;                     // Gap of the dashes of the background path
-        this.isMouseDown = false;                   // Is mouse clicked
-        this.symbol = "$";
-
+        this.is_mouse_down = false;                 // Is mouse clicked
+        this.symbol = "$";                          // Symbol before the values in the legend
+        this.value_width = 90;                      // Width of the values in the legend
     }
 
-    draw() {
+    /**
+     * Creates all the sliders
+     */
+    create() {
+        // Legend
         this.createLegend();
+
         // Svg container div
         let svg_container = document.createElement("div");
         svg_container.classList.add("svg_container");
         svg_container.setAttribute("data-svg-holder", true);
+
         // Svg holder
         let svg_holder = document.createElementNS(this.ns, "svg");
         svg_holder.setAttribute("width", this.svg_width);
@@ -57,20 +63,34 @@ class Slider {
         });
     }
 
+    /**
+     * Draws a single slider
+     * @param {object} slider_opt 
+     * @param {number} index 
+     * @param {object} svg_holder 
+     */
     drawSlider(slider_opt, index, svg_holder) {
-        // Group of slider elements
+        // Group of the elements of a single slider
         let slider = document.createElementNS(this.ns, "g");
         slider.setAttribute("data-slider", index);
         slider.setAttribute("data-active", false);
         slider.setAttribute("data-radius", slider_opt.radius);
         slider.setAttribute("transform", `rotate(-90, ${this.center_x},${this.center_y})`);
         svg_holder.appendChild(slider);
+        // Get angle of the initial data
         let initial_angle = this.calcAngleFromValue(slider_opt.min, slider_opt.max, slider_opt.initial_value);
+        // Add all the slider elements to the slider group
         this.drawCircle(slider_opt.radius, index, slider);
         this.drawPath(slider_opt.radius, initial_angle, slider_opt.color, index, slider)
         this.drawHandle(slider_opt.radius, initial_angle, index, slider);
     }
 
+    /**
+     * Draws the background circle
+     * @param {number} radius 
+     * @param {number} index 
+     * @param {object} svg 
+     */
     drawCircle(radius, index, svg) {
         let circle = document.createElementNS(this.ns, "circle");
         circle.setAttribute("data-circle", index);
@@ -84,6 +104,14 @@ class Slider {
         svg.appendChild(circle);
     }
 
+    /**
+     * Draws the path of the slider that represents its current value
+     * @param {number} radius 
+     * @param {number} initial_angle 
+     * @param {string} color 
+     * @param {number} index 
+     * @param {object} svg 
+     */
     drawPath(radius, initial_angle, color, index, svg) {
         let path = document.createElementNS(this.ns, "path");
         path.setAttribute("d", this.definePath(radius, 0, initial_angle));
@@ -95,12 +123,19 @@ class Slider {
         svg.appendChild(path);
     }
 
+    /**
+     *  Defines the shape of the path
+     * @param {number} radius 
+     * @param {number} angle_start 
+     * @param {number} angle_end 
+     * @returns {string}
+     */
     definePath(radius, angle_start, angle_end) {
+        // Calculate the position from the angles
         let startPos = this.calcPosFromAngle(radius, angle_start);
         let endPos = this.calcPosFromAngle(radius, angle_end);
-        let sweep = 1;
-
         // Determines if arc should be large or small
+        let sweep = 1;
         if (angle_end <= 180) {
             sweep = 0;
         }
@@ -109,14 +144,13 @@ class Slider {
     }
 
     /**
-     * Draws a handle for a slider
+     * Draws the handle for a slider
      * @param {number} radius 
      * @param {number} initial_value 
      * @param {number} index 
-     * @param {SVGGElement} svg 
+     * @param {object} svg 
      */
     drawHandle(radius, initial_angle, index, svg) {
-
         let handle = document.createElementNS(this.ns, "circle");
         handle.setAttribute("data-handle", index);
         let handlePosition = this.calcPosFromAngle(radius, initial_angle);
@@ -129,17 +163,26 @@ class Slider {
         svg.appendChild(handle);
     }
 
-    redrawSlider({ x, y }) {
+    /**
+     * Redraws the active slider from the current pointer position
+     * @param {number} x 
+     * @param {number} y 
+     */
+    redrawSlider(x, y) {
+        // Get the active slider
         let activeSlider = document.querySelector("[data-slider][data-active='true'");
         // Check if active slider exsists
         if (activeSlider != null) {
-            let index = (activeSlider.getAttribute("data-slider"));
+            // Get the current index of the active slider
+            let index = activeSlider.getAttribute("data-slider");
+            // Get the active slider data
+            let slider_opt = this.slider_options[index];
+            // Get the active slider elements
             let handle = document.querySelector(`[data-handle = "${index}"]`);
             let path = document.querySelector(`[data-path = "${index}"]`);
-            let slider_opt = this.slider_options[index];
 
-            // Get new angle
-            let mouse_angle = this.calcPointerPosAngle(x, y);
+            // Get new angle from the current mouse pointer position
+            let mouse_angle = this.calcPointerAngle(x, y);
 
             // Redraw Path
             path.setAttribute("d", this.definePath(slider_opt.radius, 0, mouse_angle));
@@ -157,20 +200,20 @@ class Slider {
     /**
      * Finds nearest slider according to mouse distance and sets it to active
      */
-    findNearestSlider(pointerPos) {
+    findNearestSlider(x, y) {
         // Pointer distance from center
-        let pointerDistance = this.calcDistanceFromCenter(pointerPos.x, pointerPos.y);
+        let pointerDistance = this.calcDistanceFromCenter(x, y);
         // Get all sliders
         let sliders = document.querySelectorAll("[data-slider]");
 
-        // Subtract pointer distance to slider radiuses
+        // Subtract pointer distance to slider radiuses to get the pointer distances from the sliders
         let distanceArr = [];
         sliders.forEach(slider => {
             var distance = Math.abs(slider.getAttribute("data-radius") - pointerDistance);
             distanceArr = [...distanceArr, distance];
         });
 
-        // Index of smallest distance from array of distances
+        // Get index of the smallest distance from array of distances
         let min_distance = Math.min(...distanceArr)
         let index = distanceArr.indexOf(min_distance);
         // Slider with smallest distance is set to active, others are set to false
@@ -186,7 +229,7 @@ class Slider {
     }
 
     /**
-     * Creates a table legend with the slider data
+     * Creates a table legend with the initial slider data
      */
     createLegend() {
         // Legend div
@@ -195,16 +238,18 @@ class Slider {
         // Table
         let table = document.createElement("table");
         table.classList.add("table");
-        // Data for each slider
+        // Set initial data for each slider
         this.slider_options.forEach((slider, index) => {
 
             let tr = document.createElement("tr");
-            // Value
+
+            // Slider value
             let td_1 = document.createElement("td");
             td_1.setAttribute("data-value", index);
+            td_1.style.minWidth = `${this.value_width}px`;
             td_1.innerText = this.symbol + slider.initial_value ?? 0;
 
-            // Color
+            // Slider color
             let td_2 = document.createElement("td");
             let color_box = document.createElement("span");
             color_box.setAttribute("data-color", index);
@@ -213,7 +258,7 @@ class Slider {
             color_box.innerHTML = "&nbsp";
             td_2.appendChild(color_box);
 
-            // Name
+            // Slider name
             let td_3 = document.createElement("td");
             td_3.setAttribute("data-name", index);
             td_3.innerText = slider.name ?? "No name";
@@ -228,7 +273,7 @@ class Slider {
     }
 
     /**
-     * Updates the legend with the slider current value
+     * Updates the table legend with the slider current value
      * @param {number} min 
      * @param {number} max 
      * @param {number} step
@@ -237,7 +282,9 @@ class Slider {
      */
     updateLegend(min, max, step, angle, index) {
         let td = document.querySelector(`[data-value = "${index}"]`);
+        // Get value from the current mouse angle
         let value = this.calcValueFromAngle(min, max, angle);
+        // Set the step increment by rounding the value
         value = Math.round(value / step) * step;
         td.innerHTML = this.symbol + value;
     }
@@ -277,12 +324,12 @@ class Slider {
     }
 
     /**
-     * Calculates the angle of the pointer position relative to the center of the svg
+     * Calculates the angle of the current pointer position relative to the center of the svg
      * @param {number} x 
      * @param {number} y 
      * @returns 
      */
-    calcPointerPosAngle(x, y) {
+    calcPointerAngle(x, y) {
         var angle = Math.atan2(this.center_y - y, this.center_x - x) * 180 / Math.PI - 90;
 
         if (angle < 0) {
@@ -302,7 +349,7 @@ class Slider {
     }
 
     /**
-     * Get current pointer position on mouse and touch events
+     * Get current pointer position(x, y) on mouse and touch events
      */
     getPointerPos(e) {
         let rect = document.querySelector("[data-svg-holder]").getBoundingClientRect();
@@ -322,31 +369,31 @@ class Slider {
     }
 
     /**
-     * Sets isMouseDown to true on mousedown and touchstart event
+     * Sets the nearest slider to active and sets is_mouse_down to true on mousedown and touchstart events
      */
     mouseTouchStart(e) {
-        this.isMouseDown = true;
+        this.is_mouse_down = true;
         let pos = this.getPointerPos(e);
-        this.findNearestSlider(pos);
+        this.findNearestSlider(pos.x, pos.y);
     }
 
     /**
-     * Redraws slider on mousemove and touchmove events
+     * Redraws the active slider on mousemove and touchmove events
      */
     mouseTouchMove(e) {
-        if (!this.isMouseDown) { return; }
+        if (!this.is_mouse_down) { return; }
         let pos = this.getPointerPos(e);
-        this.redrawSlider(pos);
+        this.redrawSlider(pos.x, pos.y);
     }
 
     /**
-     * Redraws slider on mouseend and touchend events and sets isMouseDown to false
+     * Redraws the active slider on mouseend and touchend events and sets is_mouse_down to false
      */
     mouseTouchEnd(e) {
-        if (!this.isMouseDown) { return; }
+        if (!this.is_mouse_down) { return; }
+        this.is_mouse_down = false;
         let pos = this.getPointerPos(e);
-        this.isMouseDown = false;
-        this.redrawSlider(pos);
+        this.redrawSlider(pos.x, pos.y);
     }
 }
 
