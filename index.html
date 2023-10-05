@@ -21,58 +21,58 @@
     <script>
 
         let options = {
-            container: '#app',
+            container: "#app",
             slider_options: [
                 {
-                    color: '#5d4378',
+                    color: "#5d4378",
                     min: 0,
                     max: 1000,
                     step: 100,
-                    radius: 200,
+                    radius: 220,
                     initial_value: 750,
-                    name: 'Transporation'
+                    name: "Transporation",
                 },
                 {
-                    color: '#0973b2',
+                    color: "#0973b2",
                     min: 0,
                     max: 1000,
                     step: 50,
-                    radius: 160,
+                    radius: 180,
                     initial_value: 650,
-                    name: 'Food'
+                    name: "Food"
                 },
                 {
-                    color: '#489217',
+                    color: "#489217",
                     min: 0,
                     max: 1000,
                     step: 100,
-                    radius: 120,
+                    radius: 140,
                     initial_value: 500,
-                    name: 'Insurance'
+                    name: "Insurance"
                 },
                 {
-                    color: '#d98328',
+                    color: "#d98328",
                     min: 0,
                     max: 1000,
                     step: 10,
-                    radius: 80,
+                    radius: 100,
                     initial_value: 800,
-                    name: 'Entertainment'
+                    name: "Entertainment"
                 },
                 {
-                    color: '#df5749',
+                    color: "#df5749",
                     min: 0,
                     max: 1000,
                     step: 50,
-                    radius: 40,
+                    radius: 60,
                     initial_value: 200,
-                    name: 'Healthcare'
+                    name: "Healthcare"
                 },
             ]
         };
 
-        const slider = new Slider(options);
-        slider.draw();
+        let slider = new Slider(options);
+        slider.create();
         
     </script>
 

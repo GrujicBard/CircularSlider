@@ -47,7 +47,6 @@ table tr td:first-child {
     font-weight: bold;
     font-size: 25px;
     padding-right: 10px;
-    width: 70px;
 }
 
 table tr td:last-child {

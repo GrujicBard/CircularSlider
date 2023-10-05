@@ -9,9 +9,13 @@ class Slider {
         this.center_x = this.svg_width / 2;         // Center of svg element
         this.center_y = this.svg_height / 2;
         this.ns = "http://www.w3.org/2000/svg";
-        this.handle_size = 14;                      // Size of the slider handle
-        this.path_width = this.handle_size *2;      // Width of the path
+        this.handle_size = 16;                      // Size of the slider handle
+        this.path_width = 28;                       // Width of the path
+        this.path_dash_size = 10;                   // Size of the dashes of the background path
+        this.path_dash_gap = 2;                     // Gap of the dashes of the background path
         this.isMouseDown = false;                   // Is mouse clicked
+        this.symbol = "$";
+
     }
 
     draw() {
@@ -22,7 +26,6 @@ class Slider {
         svg_container.setAttribute("data-svg-holder", true);
         // Svg holder
         let svg_holder = document.createElementNS(this.ns, "svg");
-        svg_holder.setAttribute("style", "border: 1px solid #cfcfcf")
         svg_holder.setAttribute("width", this.svg_width);
         svg_holder.setAttribute("height", this.svg_width);
         svg_container.appendChild(svg_holder);
@@ -62,8 +65,8 @@ class Slider {
         slider.setAttribute("data-radius", slider_opt.radius);
         slider.setAttribute("transform", `rotate(-90, ${this.center_x},${this.center_y})`);
         svg_holder.appendChild(slider);
-        this.drawCircle(slider_opt.radius, index, slider);
         let initial_angle = this.calcAngleFromValue(slider_opt.min, slider_opt.max, slider_opt.initial_value);
+        this.drawCircle(slider_opt.radius, index, slider);
         this.drawPath(slider_opt.radius, initial_angle, slider_opt.color, index, slider)
         this.drawHandle(slider_opt.radius, initial_angle, index, slider);
     }
@@ -74,47 +77,46 @@ class Slider {
         circle.setAttribute("cx", this.center_x);
         circle.setAttribute("cy", this.center_y);
         circle.setAttribute("r", radius);
+        circle.setAttribute("stroke-dasharray", `${this.path_dash_size} ${this.path_dash_gap}`);
         circle.setAttribute("fill", "none");
-        circle.style.strokeWidth = 1;
-        circle.style.stroke = "#cfcfcf";
+        circle.style.stroke = "#cfcfcf"
+        circle.style.strokeWidth = this.path_width;
         svg.appendChild(circle);
     }
 
-    drawPath(radius, initial_angle, color, index, svg ){
+    drawPath(radius, initial_angle, color, index, svg) {
         let path = document.createElementNS(this.ns, "path");
-        path.setAttribute('d', this.definePath(radius, 0, initial_angle));
+        path.setAttribute("d", this.definePath(radius, 0, initial_angle));
         path.setAttribute("data-path", index);
         path.setAttribute("fill", "none");
+        path.setAttribute("stroke-opacity", "0.9");
         path.style.stroke = color;
         path.style.strokeWidth = this.path_width;
         svg.appendChild(path);
     }
 
-    definePath (radius, angle_start, angle_end) {
+    definePath(radius, angle_start, angle_end) {
         let startPos = this.calcPosFromAngle(radius, angle_start);
         let endPos = this.calcPosFromAngle(radius, angle_end);
         let sweep = 1;
 
         // Determines if arc should be large or small
-        if(angle_end <= 180){
+        if (angle_end <= 180) {
             sweep = 0;
         }
-        
+
         return `M ${startPos.x} ${startPos.y} A ${radius} ${radius} 1 ${sweep} 1 ${endPos.x} ${endPos.y}`;
     }
 
     /**
      * Draws a handle for a slider
      * @param {number} radius 
-     * @param {number} min 
-     * @param {number} max 
      * @param {number} initial_value 
-     * @param {string} color 
      * @param {number} index 
      * @param {SVGGElement} svg 
      */
     drawHandle(radius, initial_angle, index, svg) {
-   
+
         let handle = document.createElementNS(this.ns, "circle");
         handle.setAttribute("data-handle", index);
         let handlePosition = this.calcPosFromAngle(radius, initial_angle);
@@ -140,14 +142,14 @@ class Slider {
             let mouse_angle = this.calcPointerPosAngle(x, y);
 
             // Redraw Path
-            path.setAttribute('d', this.definePath(slider_opt.radius, 0, mouse_angle));
+            path.setAttribute("d", this.definePath(slider_opt.radius, 0, mouse_angle));
 
             // Redraw Handle
             let newPos = this.calcPosFromAngle(slider_opt.radius, mouse_angle);
             handle.setAttribute("cx", newPos.x);
             handle.setAttribute("cy", newPos.y);
-          
-            // Updates legend data
+
+            // Update legend data
             this.updateLegend(slider_opt.min, slider_opt.max, slider_opt.step, mouse_angle, index);
         }
     }
@@ -200,14 +202,14 @@ class Slider {
             // Value
             let td_1 = document.createElement("td");
             td_1.setAttribute("data-value", index);
-            td_1.innerText = slider.initial_value ?? 0;
+            td_1.innerText = this.symbol + slider.initial_value ?? 0;
 
             // Color
             let td_2 = document.createElement("td");
             let color_box = document.createElement("span");
             color_box.setAttribute("data-color", index);
             color_box.style.backgroundColor = slider.color ?? "#000000";
-            color_box.classList.add('color_box');
+            color_box.classList.add("color_box");
             color_box.innerHTML = "&nbsp";
             td_2.appendChild(color_box);
 
@@ -229,14 +231,15 @@ class Slider {
      * Updates the legend with the slider current value
      * @param {number} min 
      * @param {number} max 
+     * @param {number} step
      * @param {number} angle 
      * @param {number} index 
      */
     updateLegend(min, max, step, angle, index) {
         let td = document.querySelector(`[data-value = "${index}"]`);
         let value = this.calcValueFromAngle(min, max, angle);
-        value = Math.round(value/step)* step;
-        td.innerHTML = value;
+        value = Math.round(value / step) * step;
+        td.innerHTML = this.symbol + value;
     }
 
     /**
@@ -304,12 +307,12 @@ class Slider {
     getPointerPos(e) {
         let rect = document.querySelector("[data-svg-holder]").getBoundingClientRect();
         var x, y;
-        if (e.type == 'touchstart' || e.type == 'touchmove' || e.type == 'touchend' || e.type == 'touchcancel') {
-            var evt = (typeof e.originalEvent === 'undefined') ? e : e.originalEvent;
+        if (e.type == "touchstart" || e.type == "touchmove" || e.type == "touchend" || e.type == "touchcancel") {
+            var evt = (typeof e.originalEvent === "undefined") ? e : e.originalEvent;
             var touch = evt.touches[0] || evt.changedTouches[0];
             x = touch.pageX;
             y = touch.pageY;
-        } else if (e.type == 'mousedown' || e.type == 'mouseup' || e.type == 'mousemove' || e.type == 'mouseover' || e.type == 'mouseout' || e.type == 'mouseenter' || e.type == 'mouseleave') {
+        } else if (e.type == "mousedown" || e.type == "mouseup" || e.type == "mousemove" || e.type == "mouseover" || e.type == "mouseout" || e.type == "mouseenter" || e.type == "mouseleave") {
             x = e.clientX;
             y = e.clientY;
         }
@@ -317,6 +320,7 @@ class Slider {
         var y = y - rect.top;
         return { x, y };
     }
+
     /**
      * Sets isMouseDown to true on mousedown and touchstart event
      */
@@ -325,6 +329,7 @@ class Slider {
         let pos = this.getPointerPos(e);
         this.findNearestSlider(pos);
     }
+
     /**
      * Redraws slider on mousemove and touchmove events
      */
@@ -333,6 +338,7 @@ class Slider {
         let pos = this.getPointerPos(e);
         this.redrawSlider(pos);
     }
+
     /**
      * Redraws slider on mouseend and touchend events and sets isMouseDown to false
      */
