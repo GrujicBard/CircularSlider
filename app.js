@@ -283,7 +283,7 @@ class Slider {
      * Creates the text under the svg
      * @param {object} container 
      */
-    createText(container){
+    createText(container) {
         let div = document.createElement("div");
         div.classList.add("text_container");
         let text = document.createElement("p");
