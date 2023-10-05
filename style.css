@@ -1,7 +1,7 @@
 body {
     background-color: rgb(255, 255, 255);
-    font-family: 'Verdana', sans-serif;
-    height: 100vh; 
+    font-family: 'Arial', sans-serif;
+    height: 100vh;
 }
 
 .container {
@@ -10,20 +10,28 @@ body {
     overflow: hidden;
 }
 
-#app{
+#app {
     position: relative;
 }
 
 /* Slider */
-.svg_container{
+.svg_container {
     float: right;
 }
 
+/* Text */
+.text_container p {
+    text-align: center;
+    margin: 0;
+    font-style: italic;
+    font-weight: bold;
+    font-family: 'Arial Black', sans-serif;
+}
 
 /* Legend */
 .legend_container {
     float: left;
-    max-height: 220px;
+    max-height: 250px;
     margin: 0;
     position: relative;
     top: 50%;
@@ -45,7 +53,7 @@ body {
 
 table tr td:first-child {
     font-weight: bold;
-    font-size: 25px;
+    font-size: 35px;
     padding-right: 10px;
 }
 
@@ -58,4 +66,3 @@ table tr td:last-child {
     height: 20px;
     width: 20px;
 }
-

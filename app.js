@@ -4,18 +4,19 @@ class Slider {
         this.container = document.querySelector(container);
         this.slider_options = slider_options
 
-        this.svg_height = 500;                      // Height of the svg element
-        this.svg_width = 500;                       // Width of the svg element
-        this.center_x = this.svg_width / 2;         // Center of svg element
+        this.svg_height = 500;                          // Height of the svg element
+        this.svg_width = 500;                           // Width of the svg element
+        this.center_x = this.svg_width / 2;             // Center of svg element
         this.center_y = this.svg_height / 2;
         this.ns = "http://www.w3.org/2000/svg";
-        this.handle_size = 16;                      // Size of the slider handle
-        this.path_width = 28;                       // Width of the slider path
-        this.path_dash_size = 10;                   // Size of the dashes of the background path
-        this.path_dash_gap = 2;                     // Gap of the dashes of the background path
-        this.is_mouse_down = false;                 // Is mouse clicked
-        this.symbol = "$";                          // Symbol before the values in the legend
-        this.value_width = 90;                      // Width of the values in the legend
+        this.handle_size = 16;                          // Size of the slider handle
+        this.path_width = 28;                           // Width of the slider path
+        this.path_dash_size = 10;                       // Size of the dashes of the background path
+        this.path_dash_gap = 2;                         // Gap of the dashes of the background path
+        this.is_mouse_down = false;                     // Is mouse clicked
+        this.value_width = 100;                         // Width of the values in the legend
+        this.symbol = "$";                              // Symbol before the values in the legend
+        this.text = "ADJUST DIAL TO ENTER EXPENSES"     // Text bellow the svg
     }
 
     /**
@@ -41,6 +42,8 @@ class Slider {
         this.slider_options.forEach((slider_opt, index) => {
             this.drawSlider(slider_opt, index, svg_holder);
         });
+        // Text
+        this.createText(svg_container);
 
         // Event listeners
         svg_container.addEventListener("mousedown", e => {
@@ -61,6 +64,8 @@ class Slider {
         svg_container.addEventListener("touchend", e => {
             this.mouseTouchEnd(e);
         });
+
+
     }
 
     /**
@@ -270,6 +275,18 @@ class Slider {
         });
         div.appendChild(table);
         this.container.appendChild(div);
+    }
+    /**
+     * Creates the text under the svg
+     * @param {object} container 
+     */
+    createText(container){
+        let div = document.createElement("div");
+        div.classList.add("text_container");
+        let text = document.createElement("p");
+        text.innerHTML = `${this.text}`;
+        div.appendChild(text);
+        container.appendChild(div);
     }
 
     /**

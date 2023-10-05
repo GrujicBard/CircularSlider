@@ -6,7 +6,6 @@
     
     .legend_container {
         float: left;
-        max-height: 220px;
         transform: none;
     }
     .svg_container{
@@ -20,11 +19,9 @@
     }
     .legend_container {
         float: left;
-        max-height: 220px;
         transform: none;
     }
     .svg_container{
         touch-action: none;
-        max-width: 100px;
     }
 }
