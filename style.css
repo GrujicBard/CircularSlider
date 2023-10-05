@@ -1,17 +1,18 @@
 body {
     background-color: rgb(255, 255, 255);
     font-family: 'Arial', sans-serif;
-    height: 100vh;
+    min-height: 100vh;
 }
 
 .container {
-    display: flex;
+    max-width: 800px;
     width: 100%;
-    overflow: hidden;
 }
 
 #app {
-    position: relative;
+    display: flex;
+    overflow: hidden;
+    flex-wrap: wrap;
 }
 
 /* Slider */
@@ -23,6 +24,7 @@ body {
 .text_container p {
     text-align: center;
     margin: 0;
+    font-size: 12px;
     font-style: italic;
     font-weight: bold;
     font-family: 'Arial Black', sans-serif;
@@ -34,30 +36,26 @@ body {
     max-height: 250px;
     margin: 0;
     position: relative;
-    top: 50%;
-    -ms-transform: translateY(-50%);
-    transform: translateY(-50%);
+    -ms-transform: translateY(30%);
+    transform: translateY(30%);
 }
 
 .table {
-    height: 100%;
+    width: 100%;
 }
 
 .table tr {
     margin: 0 0.5rem;
 }
 
-.table td {
-    padding-bottom: 10px;
-}
-
 table tr td:first-child {
     font-weight: bold;
-    font-size: 35px;
+    font-size: 30px;
     padding-right: 10px;
 }
 
 table tr td:last-child {
+    font-size: 12px;
     padding-left: 10px;
 }
 

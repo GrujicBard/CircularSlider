@@ -1,27 +1,7 @@
-@media screen and (orientation: portrait) {
-    
-    #app{
-        position: absolute;
-    }
-    
-    .legend_container {
-        float: left;
-        transform: none;
-    }
-    .svg_container{
-        touch-action: none;
-    }
+.legend_container {
+    transform: none;
 }
 
-@media screen and (orientation: landscape) {
-    #app{
-        position: absolute;
-    }
-    .legend_container {
-        float: left;
-        transform: none;
-    }
-    .svg_container{
-        touch-action: none;
-    }
+.svg_container {
+    touch-action: none;
 }

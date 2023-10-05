@@ -1,22 +1,27 @@
 class Slider {
 
+    /**
+     * @constructor
+     * @param {string} container 
+     * @param {array} slider_options
+     */
     constructor({ container, slider_options }) {
         this.container = document.querySelector(container);
         this.slider_options = slider_options
 
-        this.svg_height = 500;                          // Height of the svg element
-        this.svg_width = 500;                           // Width of the svg element
-        this.center_x = this.svg_width / 2;             // Center of svg element
-        this.center_y = this.svg_height / 2;
         this.ns = "http://www.w3.org/2000/svg";
-        this.handle_size = 16;                          // Size of the slider handle
-        this.path_width = 28;                           // Width of the slider path
-        this.path_dash_size = 10;                       // Size of the dashes of the background path
-        this.path_dash_gap = 2;                         // Gap of the dashes of the background path
-        this.is_mouse_down = false;                     // Is mouse clicked
-        this.value_width = 100;                         // Width of the values in the legend
-        this.symbol = "$";                              // Symbol before the values in the legend
-        this.text = "ADJUST DIAL TO ENTER EXPENSES"     // Text bellow the svg
+        this.svg_height = 350;                         // Height of the svg element
+        this.svg_width = 350;                          // Width of the svg element
+        this.center_x = this.svg_width / 2;            // Center of svg element
+        this.center_y = this.svg_height / 2;
+        this.handle_size = 12;                         // Size of the slider handle
+        this.path_width = 18;                          // Width of the slider path
+        this.path_dash_size = 6;                       // Size of the dashes of the background path
+        this.path_dash_gap = 2;                        // Gap of the dashes of the background path
+        this.is_mouse_down = false;                    // Is mouse clicked
+        this.value_width = 90;                         // Width of the values in the legend
+        this.symbol = "$";                             // Symbol before the values in the legend
+        this.text = "ADJUST DIAL TO ENTER EXPENSES"    // Text bellow the svg
     }
 
     /**
@@ -29,10 +34,10 @@ class Slider {
         // Svg container div
         let svg_container = document.createElement("div");
         svg_container.classList.add("svg_container");
-        svg_container.setAttribute("data-svg-holder", true);
 
         // Svg holder
         let svg_holder = document.createElementNS(this.ns, "svg");
+        svg_holder.setAttribute("data-svg-holder", true);
         svg_holder.setAttribute("width", this.svg_width);
         svg_holder.setAttribute("height", this.svg_width);
         svg_container.appendChild(svg_holder);
@@ -64,8 +69,6 @@ class Slider {
         svg_container.addEventListener("touchend", e => {
             this.mouseTouchEnd(e);
         });
-
-
     }
 
     /**
@@ -382,6 +385,7 @@ class Slider {
         }
         var x = x - rect.left;
         var y = y - rect.top;
+
         return { x, y };
     }
 
