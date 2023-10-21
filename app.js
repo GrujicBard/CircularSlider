@@ -10,18 +10,18 @@ class Slider {
         this.slider_options = slider_options
 
         this.ns = "http://www.w3.org/2000/svg";
-        this.svg_height = 350;                         // Height of the svg element
-        this.svg_width = 350;                          // Width of the svg element
-        this.center_x = this.svg_width / 2;            // Center of svg element
+        this.svg_height = 350;
+        this.svg_width = 350;
+        this.center_x = this.svg_width / 2;
         this.center_y = this.svg_height / 2;
-        this.handle_size = 12;                         // Size of the slider handle
-        this.path_width = 18;                          // Width of the slider path
-        this.path_dash_size = 6;                       // Size of the dashes of the background path
-        this.path_dash_gap = 2;                        // Gap of the dashes of the background path
-        this.is_mouse_down = false;                    // Is mouse clicked
-        this.value_width = 90;                         // Width of the values in the legend
-        this.symbol = "$";                             // Symbol before the values in the legend
-        this.text = "ADJUST DIAL TO ENTER EXPENSES"    // Text bellow the svg
+        this.handle_size = 12;
+        this.path_width = 18;
+        this.path_dash_size = 6;
+        this.path_dash_gap = 2;
+        this.is_mouse_down = false;
+        this.value_width = 90;
+        this.symbol = "$";
+        this.text = "ADJUST DIAL TO ENTER EXPENSES"
     }
 
     /**
@@ -143,12 +143,12 @@ class Slider {
         let startPos = this.calcPosFromAngle(radius, angle_start);
         let endPos = this.calcPosFromAngle(radius, angle_end);
         // Determines if arc should be large or small
-        let sweep = 1;
+        let angle_large = 1;
         if (angle_end <= 180) {
-            sweep = 0;
+            angle_large = 0;
         }
 
-        return `M ${startPos.x} ${startPos.y} A ${radius} ${radius} 1 ${sweep} 1 ${endPos.x} ${endPos.y}`;
+        return `M ${startPos.x} ${startPos.y} A ${radius} ${radius} 0 ${angle_large} 1 ${endPos.x} ${endPos.y}`;
     }
 
     /**
@@ -217,7 +217,7 @@ class Slider {
         // Subtract pointer distance to slider radiuses to get the pointer distances from the sliders
         let distanceArr = [];
         sliders.forEach(slider => {
-            var distance = Math.abs(slider.getAttribute("data-radius") - pointerDistance);
+            let distance = Math.abs(slider.getAttribute("data-radius") - pointerDistance);
             distanceArr = [...distanceArr, distance];
         });
 
@@ -350,7 +350,7 @@ class Slider {
      * @returns 
      */
     calcPointerAngle(x, y) {
-        var angle = Math.atan2(this.center_y - y, this.center_x - x) * 180 / Math.PI - 90;
+        let angle = Math.atan2(this.center_y - y, this.center_x - x) * 180 / Math.PI - 90;
 
         if (angle < 0) {
             angle = angle + 360;
@@ -373,18 +373,18 @@ class Slider {
      */
     getPointerPos(e) {
         let rect = document.querySelector("[data-svg-holder]").getBoundingClientRect();
-        var x, y;
+        let x, y;
         if (e.type == "touchstart" || e.type == "touchmove" || e.type == "touchend" || e.type == "touchcancel") {
-            var evt = (typeof e.originalEvent === "undefined") ? e : e.originalEvent;
-            var touch = evt.touches[0] || evt.changedTouches[0];
+            let evt = (typeof e.originalEvent === "undefined") ? e : e.originalEvent;
+            let touch = evt.touches[0] || evt.changedTouches[0];
             x = touch.pageX;
             y = touch.pageY;
         } else if (e.type == "mousedown" || e.type == "mouseup" || e.type == "mousemove" || e.type == "mouseover" || e.type == "mouseout" || e.type == "mouseenter" || e.type == "mouseleave") {
             x = e.clientX;
             y = e.clientY;
         }
-        var x = x - rect.left;
-        var y = y - rect.top;
+        x = x - rect.left;
+        y = y - rect.top;
 
         return { x, y };
     }
