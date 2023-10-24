@@ -20,8 +20,6 @@ class Slider {
         this.path_dash_gap = 2;
         this.is_mouse_down = false;
         this.value_width = 90;
-        this.symbol = "$";
-        this.text = "ADJUST DIAL TO ENTER EXPENSES"
     }
 
     /**
@@ -47,8 +45,6 @@ class Slider {
         this.slider_options.forEach((slider_opt, index) => {
             this.drawSlider(slider_opt, index, svg_holder);
         });
-        // Text
-        this.createText(svg_container);
 
         // Event listeners
         svg_container.addEventListener("mousedown", e => {
@@ -255,7 +251,7 @@ class Slider {
             let td_1 = document.createElement("td");
             td_1.setAttribute("data-value", index);
             td_1.style.minWidth = `${this.value_width}px`;
-            td_1.innerText = this.symbol + slider.initial_value ?? 0;
+            td_1.innerText = slider.initial_value ?? 0;
 
             // Slider color
             let td_2 = document.createElement("td");
@@ -306,7 +302,7 @@ class Slider {
         let value = this.calcValueFromAngle(min, max, angle);
         // Set the step increment by rounding the value
         value = Math.round(value / step) * step;
-        td.innerHTML = this.symbol + value;
+        td.innerHTML = value;
     }
 
     /**
